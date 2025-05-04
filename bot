@@ -1,0 +1,40 @@
+# Script para BotFather (PixelBot) - Recoge BonusBoxes en Space Aces
+from botfather import *
+import time
+
+# === CONFIGURACIÓN ===
+bonus_color = (250,252,251,255)  # ← CAMBIA ESTE COLOR al que corresponda a tus BonusBoxes
+tolerancia = 20              # Tolerancia para encontrar el color
+radio_busqueda = 300         # Qué tan lejos buscar alrededor de la nave
+velocidad = 5                # Qué tan rápido moverse hacia el objetivo
+
+def colores_similares(color1, color2, tolerancia):
+    return all(abs(c1 - c2) <= tolerancia for c1, c2 in zip(color1, color2))
+
+def buscar_bonus():
+    nave_x, nave_y = get_mouse_position()  # Suponemos que la nave sigue el mouse
+    for x in range(nave_x - radio_busqueda, nave_x + radio_busqueda, 10):
+        for y in range(nave_y - radio_busqueda, nave_y + radio_busqueda, 10):
+            if 0 <= x < screen_width() and 0 <= y < screen_height():
+                color = get_pixel_color(x, y)
+                if colores_similares(color, bonus_color, tolerancia):
+                    return x, y
+    return None
+
+def mover_a_bonus(coord):
+    x, y = coord
+    move_mouse_smooth(x, y, velocidad)
+
+def main():
+    print("PixelBot Space Aces iniciado...")
+    while True:
+        bonus = buscar_bonus()
+        if bonus:
+            mover_a_bonus(bonus)
+            time.sleep(0.5)  # Tiempo de espera entre movimientos
+        else:
+            # Movimiento aleatorio o circular mientras no encuentra cajas
+            move_mouse_relative(30, 0)
+            time.sleep(0.3)
+
+main()
